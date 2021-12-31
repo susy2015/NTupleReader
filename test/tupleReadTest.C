@@ -15,20 +15,20 @@ private:
     void getScaleWeights(NTupleReader& tr)
     {
         if(trSupp_.getNextEvent() &&
-           tr.getVar<unsigned long long>("event") == trSupp_.getVar<unsigned long long>("event") &&
-           tr.getVar<float>("GenMET_pt")          == trSupp_.getVar<float>("GenMET_pt") )
+           tr.getVar<unsigned long long>("EvtNum") == trSupp_.getVar<unsigned long long>("EvtNum") &&
+           tr.getVar<float>("GenMET")          == trSupp_.getVar<float>("GenMET") )
         {
-            tr.registerDerivedVec("LHEScaleWeight", new std::vector(trSupp_.getVec<float>("LHEScaleWeight")));
+            tr.registerDerivedVec("LHEScaleWeight", new std::vector(trSupp_.getVec<float>("ScaleWeights")));
         }
-        //else
-        //{
-        //    std::cout << tr.getVar<unsigned long long>("event") << "\t" << trSupp_.getVar<unsigned long long>("event") << "\t" << tr.getVar<float>("GenMET_pt") << "\t" << trSupp_.getVar<float>("met") << std::endl;
-        //    THROW_SATEXCEPTION("ERROR: Event mismatch between master and supplamental file!!!!");
-        //}
+        else
+        {
+            std::cout << tr.getVar<unsigned long long>("EvtNum") << "\t" << trSupp_.getVar<unsigned long long>("EvtNum") << "\t" << tr.getVar<float>("GenMET") << "\t" << trSupp_.getVar<float>("MET") << std::endl;
+            THROW_NTREXCEPTION("ERROR: Event mismatch between master and supplamental file!!!!");
+        }
     }
 
 public:
-    GetScaleWeights(TChain *ch) : trSupp_(ch, {"event"}) {}
+    GetScaleWeights(TChain *ch) : trSupp_(ch, {"EvtNum"}) {}
     GetScaleWeights(GetScaleWeights&) = delete;
     GetScaleWeights(GetScaleWeights&& gsw) : trSupp_(std::move(gsw.trSupp_)) {}
 
@@ -39,16 +39,18 @@ int main()
 {
     char baseFile[]         = "testFile.root";
     char supplamantalFile[] = "testFile.root";
+    char treeName[]         = "TreeMaker2/PreSelection";
+    std::string exampleVar  = "NJets";
 
-    TChain *chBase = new TChain("Events");
+    TChain *chBase = new TChain(treeName);
     chBase->Add(baseFile);
 
-    TChain *chSupp = new TChain("Events");
+    TChain *chSupp = new TChain(treeName);
     chSupp->Add(supplamantalFile);
 
     try
     {
-        NTupleReader tr(chBase, {"nJet"});
+        NTupleReader tr(chBase, {exampleVar});
 
         //For NTupleReader users you simply need to register the class with NTupleReader 
         tr.emplaceModule<GetScaleWeights>(chSupp);
@@ -60,7 +62,7 @@ int main()
             std::cout << LHEScaleWeight.size() << std::endl;
         }
     }
-    catch(const SATException& e)
+    catch(const NTRException& e)
     {
         e.print();
     }
