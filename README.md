@@ -27,3 +27,10 @@ make clean
 make -j 4
 ```
 
+Run test
+
+```
+cd $CMSSW_BASE/src/NTupleReader/test/
+./tupleReadTest
+```
+
