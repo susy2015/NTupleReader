@@ -115,7 +115,7 @@ endef
 $(foreach DIR,$(SRC_DIR),$(foreach EXT,$(SRC_EXT),$(eval $(call compile_rule,$(DIR),$(EXT)))))
 
 # Make executables
-tupleReadTest: $(ODIR)/tupleReadTest.o $(ODIR)/NTupleReader.o
+tupleReadTest: $(ODIR)/tupleReadTest.o $(ODIR)/NTupleReader.o $(ODIR)/NTRException.o
 	$(LD) $^ $(LIBS) $(LHAPDFLIB) -o $@
 
 clean:
