@@ -1,7 +1,7 @@
 #ifndef NTUPLE_READER_H
 #define NTUPLE_READER_H
 
-#include "SATException.h"
+#include "NTupleReader/include/NTRException.h"
 
 #include "TLorentzVector.h"
 #include "TBranch.h"
@@ -242,7 +242,7 @@ private:
         }
         else
         {
-            THROW_SATEXCEPTION("ERROR: Unknown array length type: " + type);
+            THROW_NTREXCEPTION("ERROR: Unknown array length type: " + type);
         }
     }
     
@@ -356,19 +356,19 @@ public:
     template<typename T> void registerFunction(T& f)
     {
         if(isFirstEvent()) functionVec_.emplace_back(new FuncWrapperImpl<T>(f));
-        else THROW_SATEXCEPTION("New functions cannot be registered after tuple reading begins!\n");
+        else THROW_NTREXCEPTION("New functions cannot be registered after tuple reading begins!\n");
     }
 
     template<typename T> void registerFunction(T&& f)
     {
         if(isFirstEvent()) functionVec_.emplace_back(new FuncWrapperImpl<T>(f));
-        else THROW_SATEXCEPTION("New functions cannot be registered after tuple reading begins!\n");
+        else THROW_NTREXCEPTION("New functions cannot be registered after tuple reading begins!\n");
     }
 
     template<typename T, typename ...Args> T& emplaceModule(Args&&... args)
     {
         if(isFirstEvent()) functionVec_.emplace_back(new FuncWrapperImpl<T>(args...));
-        else THROW_SATEXCEPTION("New module cannot be registered after tuple reading begins!\n");        
+        else THROW_NTREXCEPTION("New module cannot be registered after tuple reading begins!\n");        
         return static_cast<FuncWrapperImpl<T>*>(functionVec_.back())->getFunc();
     }
 
@@ -391,7 +391,7 @@ public:
                 auto typeItr = typeMap_.find(name);
                 if(typeItr != typeMap_.end())
                 {
-                    THROW_SATEXCEPTION("You are trying to redefine a tuple var: \"" + name + "\".  This is not allowed!  Please choose a unique name.");
+                    THROW_NTREXCEPTION("You are trying to redefine a tuple var: \"" + name + "\".  This is not allowed!  Please choose a unique name.");
                 }
                 handleItr = branchMap_.insert(std::make_pair(name, createHandle(new T()))).first;
 
@@ -399,7 +399,7 @@ public:
             }
             setDerived(var, handleItr->second.ptr);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             e.print();
             if(reThrow_) throw;
@@ -416,7 +416,7 @@ public:
                 auto typeItr = typeMap_.find(name);
                 if(typeItr != typeMap_.end())
                 {
-                    THROW_SATEXCEPTION("You are trying to redefine a tuple var: \"" + name + "\".  This is not allowed!  Please choose a unique name.");
+                    THROW_NTREXCEPTION("You are trying to redefine a tuple var: \"" + name + "\".  This is not allowed!  Please choose a unique name.");
                 }
                 handleItr = branchVecMap_.insert(std::make_pair(name, createVecHandle(new T*()))).first;
             
@@ -429,7 +429,7 @@ public:
             }
             setDerived(var, handleItr->second.ptr);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             e.print();
             if(reThrow_) throw;
@@ -459,7 +459,7 @@ public:
         {
             return &getTupleObj<T>(var, branchMap_);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -473,7 +473,7 @@ public:
         {
             return &getTupleObj<std::vector<T>*>(var, branchVecMap_);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -488,7 +488,7 @@ public:
         {
             return getTupleObj<T>(var, branchMap_);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -503,7 +503,7 @@ public:
         {            
             return *getTupleObj<std::vector<T>*>(var, branchVecMap_);                
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -544,7 +544,7 @@ public:
                 return vec2D;
             }
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -578,7 +578,7 @@ public:
             //check vector lengths
             if(pt.size() != eta.size() || pt.size() != phi.size() || pt.size() != mass.size())
             {
-                THROW_SATEXCEPTION("TLorentzVector component input vectors have unequal length!!! (" + ptVar + ":" + std::to_string(pt.size()) + " "  + etaVar + ":" + std::to_string(eta.size()) + " "  + phiVar + ":" + std::to_string(phi.size()) + " "  + massVar + ":" + std::to_string(mass.size()) + ")");
+                THROW_NTREXCEPTION("TLorentzVector component input vectors have unequal length!!! (" + ptVar + ":" + std::to_string(pt.size()) + " "  + etaVar + ":" + std::to_string(eta.size()) + " "  + phiVar + ":" + std::to_string(phi.size()) + " "  + massVar + ":" + std::to_string(mass.size()) + ")");
             }
 
             //create vector<TLorentzVector> with number of elements necessary
@@ -592,7 +592,7 @@ public:
             //return resultant vector
             return tlv;
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -613,7 +613,7 @@ public:
         {
             return *getTupleObj<std::map<T, V>*>(var, branchVecMap_);
         }
-        catch(const SATException& e)
+        catch(const NTRException& e)
         {
             if(isFirstEvent()) e.print();
             if(reThrow_) throw;
@@ -707,7 +707,7 @@ private:
             }
             else
             {
-                THROW_SATEXCEPTION("Branch \"" + name + "\" appears to be an array, but there is no size branch");
+                THROW_NTREXCEPTION("Branch \"" + name + "\" appears to be an array, but there is no size branch");
             }
         
             tree_->SetBranchStatus(name.c_str(), 1);
@@ -731,7 +731,7 @@ private:
         {
             *static_cast<T*>(tuple_iter->second.ptr) = var;
         }
-        else THROW_SATEXCEPTION("Variable not found: \"" + name + "\"!!!\n");
+        else THROW_NTREXCEPTION("Variable not found: \"" + name + "\"!!!\n");
     }
 
     template<typename T, typename V> T& getTupleObj(const std::string& var, const V& v_tuple) const
@@ -772,7 +772,7 @@ private:
                 tuple_iter = v_tuple.find(var);
         
                 //if this is an array, force read length
-                if (tuple_iter == v_tuple.end()) THROW_SATEXCEPTION("ERROR: The variable "+var+" of type "+typeMap_[var]+" was not registered");
+                if (tuple_iter == v_tuple.end()) THROW_NTREXCEPTION("ERROR: The variable "+var+" of type "+typeMap_[var]+" was not registered");
 
                 if(tuple_iter->second.branch)
                 {
@@ -798,11 +798,11 @@ private:
         auto typeIter = typeMap_.find(var);
         if(typeIter != typeMap_.end())
         {
-            THROW_SATEXCEPTION("Variable not found: \"" + var + "\" with type \"" + demangle<typename std::remove_pointer<T>::type>() +"\", but is found with type \"" + typeIter->second + "\"!!!");
+            THROW_NTREXCEPTION("Variable not found: \"" + var + "\" with type \"" + demangle<typename std::remove_pointer<T>::type>() +"\", but is found with type \"" + typeIter->second + "\"!!!");
         }
         else
         {
-            THROW_SATEXCEPTION("Variable not found: \"" + var + "\" with type \"" + demangle<typename std::remove_pointer<T>::type>() +"\"!!!");
+            THROW_NTREXCEPTION("Variable not found: \"" + var + "\" with type \"" + demangle<typename std::remove_pointer<T>::type>() +"\"!!!");
         }
     }
 

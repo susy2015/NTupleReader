@@ -1,4 +1,4 @@
-#include "NTupleReader.h"
+#include "NTupleReader/include/NTupleReader.h"
 
 #include "TFile.h"
 #include "TChain.h"
@@ -75,7 +75,7 @@ public:
 NTupleReader::NTupleReader(TTree * tree, const std::set<std::string>& activeBranches) : activeBranches_(activeBranches)
 {
     tree_ = tree;
-    if(!tree_) THROW_SATEXCEPTION("NTupleReader(...): TTree " + std::string(tree_->GetName()) + " is invalid!!!!");
+    if(!tree_) THROW_NTREXCEPTION("NTupleReader(...): TTree " + std::string(tree_->GetName()) + " is invalid!!!!");
     init();
 }
 
@@ -137,7 +137,7 @@ void NTupleReader::setTree(TTree * tree)
     }
     else
     {
-        THROW_SATEXCEPTION("Tree already loaded into NTupleReader: you can only load one tree!!!"); 
+        THROW_NTREXCEPTION("Tree already loaded into NTupleReader: you can only load one tree!!!"); 
     }
 }
 
@@ -153,10 +153,10 @@ int NTupleReader::getNEntries() const
         if(tree_) return tree_->GetEntries();
         else 
         {
-            THROW_SATEXCEPTION("NO tree defined yet!!!");
+            THROW_NTREXCEPTION("NO tree defined yet!!!");
         }
     }
-    catch(const SATException& e)
+    catch(const NTRException& e)
     {
         e.print();
         if(reThrow_) throw;
@@ -240,7 +240,7 @@ void NTupleReader::registerBranch(TBranch * const branch, bool activate) const
     }
     else
     {
-        THROW_SATEXCEPTION("Branch \"" + name + "\" has no leaves and therefore no data!!!\?\?\?!!!");
+        THROW_NTREXCEPTION("Branch \"" + name + "\" has no leaves and therefore no data!!!\?\?\?!!!");
     }
 
     //Check if this is an array or singleton (vectors count as singleton)
@@ -260,7 +260,7 @@ void NTupleReader::registerBranch(TBranch * const branch, bool activate) const
             else if(type.find("string")         != std::string::npos) registerVecBranch<std::vector<std::string>>(name, activate);
             else if(type.find("TLorentzVector") != std::string::npos) registerVecBranch<std::vector<TLorentzVector>>(name, activate);
             else if(type.find("float")          != std::string::npos) registerVecBranch<std::vector<float>>(name, activate);
-            else THROW_SATEXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
+            else THROW_NTREXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
         }
         else if(type.find("vector") != std::string::npos)
         {
@@ -284,7 +284,7 @@ void NTupleReader::registerBranch(TBranch * const branch, bool activate) const
             else if(type.find("Double_t")  != std::string::npos) registerVecBranch<double>(name, activate);
             else if(type.find("Int_t")     != std::string::npos) registerVecBranch<int>(name, activate);
             else if(type.find("Bool_t")    != std::string::npos) registerVecBranch<bool>(name, activate);
-            else THROW_SATEXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
+            else THROW_NTREXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
         }
         else
         {
@@ -308,7 +308,7 @@ void NTupleReader::registerBranch(TBranch * const branch, bool activate) const
             else if(type.find("/L") != std::string::npos) registerBranch<unsigned long>(name, activate);
             else if(type.find("/l") != std::string::npos) registerBranch<long>(name, activate);
             else if(type.find("/b") != std::string::npos) registerBranch<bool>(name, activate);
-            else THROW_SATEXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
+            else THROW_NTREXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
         }
     }
     else if(countLeaf || leafLength > 1) //if this ptr is non-null then this is a variable length arra
@@ -332,11 +332,11 @@ void NTupleReader::registerBranch(TBranch * const branch, bool activate) const
         else if(type.find("Double_t")       != std::string::npos) registerArrayBranch<double>(name, branch, activate, leafLength, dimVec);
         else if(type.find("Int_t")          != std::string::npos) registerArrayBranch<int>(name, branch, activate, leafLength, dimVec);
         else if(type.find("Bool_t")         != std::string::npos) registerArrayBranch<uint8_t>(name, branch, activate, leafLength, dimVec);
-        else THROW_SATEXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
+        else THROW_NTREXCEPTION("No type match for branch \"" + name + "\" with type \"" + type + "\"!!!");
     }
     else
     {
-        THROW_SATEXCEPTION("Branch \"" + name + "\" with type \"" + type + "\" has no data!!!");
+        THROW_NTREXCEPTION("Branch \"" + name + "\" with type \"" + type + "\" has no data!!!");
     }
 }
 
@@ -380,7 +380,7 @@ void NTupleReader::createVectorsForArrayReads(int evt)
                 }
                 else
                 {
-                    THROW_SATEXCEPTION("Branch \"" + handlePair.first + "\" appears to be an array, but there is no size branch");
+                    THROW_NTREXCEPTION("Branch \"" + handlePair.first + "\" appears to be an array, but there is no size branch");
                 }
             }
             //Prep the vector which will hold the data
@@ -458,13 +458,13 @@ bool NTupleReader::calculateDerivedVariables()
 void NTupleReader::registerFunction(void (*f)(NTupleReader&))
 {
     if(isFirstEvent()) functionVec_.emplace_back(new FuncWrapperImpl<std::function<void(NTupleReader&)>>(std::function<void(NTupleReader&)>(f)));
-    else THROW_SATEXCEPTION("new functions cannot be registered after tuple reading begins!");
+    else THROW_NTREXCEPTION("new functions cannot be registered after tuple reading begins!");
 }
 
 void NTupleReader::registerFunction(bool (*f)(NTupleReader&))
 {
     if(isFirstEvent()) functionVec_.emplace_back(new FuncWrapperImpl<std::function<bool(NTupleReader&)>>(std::function<bool(NTupleReader&)>(f)));
-    else THROW_SATEXCEPTION("new functions cannot be registered after tuple reading begins!");
+    else THROW_NTREXCEPTION("new functions cannot be registered after tuple reading begins!");
 }
 
 void NTupleReader::getType(const std::string& name, std::string& type) const
@@ -530,7 +530,7 @@ void NTupleReader::addAlias(const std::string& name, const std::string& alias)
     }
     else
     {
-        THROW_SATEXCEPTION("Variable name \"" + alias + "\" already exists!!!");
+        THROW_NTREXCEPTION("Variable name \"" + alias + "\" already exists!!!");
     }
 }
 
@@ -545,9 +545,9 @@ void* NTupleReader::getVarPtr(const std::string& var) const
             return tuple_iter->second.ptr;
         }
             
-        THROW_SATEXCEPTION("NTupleReader::getPtr(...): Variable not found: " + var);
+        THROW_NTREXCEPTION("NTupleReader::getPtr(...): Variable not found: " + var);
     }
-    catch(const SATException& e)
+    catch(const NTRException& e)
     {
         e.print();
         if(reThrow_) throw;
@@ -571,9 +571,9 @@ template<> const void* NTupleReader::getVecPtr<void>(const std::string& var) con
             return tuple_iter->second.ptr;
         }
 
-        THROW_SATEXCEPTION("NTupleReader::getVecPtr(...): Variable not found: " + var);
+        THROW_NTREXCEPTION("NTupleReader::getVecPtr(...): Variable not found: " + var);
     }
-    catch(const SATException& e)
+    catch(const NTRException& e)
     {
         e.print();
         if(reThrow_) throw;
