@@ -1,18 +1,9 @@
 ## Variables set by configure 
-OPENCV_DIRECTORY  = @OPENCVDIR@
-XGBOOST_DIRECTORY = @XGBOOSTDIR@
-TENSORFLOW_DIR    = @TENSORFLOWDIR@
-
 CXX           = @CXX@
 LD            = @CXX@
 CXXFLAGS      = @CXXFLAGS@
 LDFLAGS       = @LDFLAGS@
-PREFIX        = @prefix@
-LDCONFIG      = @LDCONFIG@
-LIBSUFFIX     = @LIBSUFFIX@
 PYTHONCFG     = @PYTHONCFG@
-SCRAMNUMPYCFG = @SCRAMNUMPYCFG@
-TMVALIB       = @TMVALIB@
 
 #manual configuration
 IDIR       = $(CMSSW_BASE)/src/NTupleReader/include/
@@ -45,12 +36,6 @@ INCLUDESDIRS += $(shell root-config --cflags)
 # ROOT libraries
 LIBS         += $(shell root-config --glibs)
 
-# TMVA library
-ifdef TMVALIB
-	CXXFLAGS += -DSHOTTOPTAGGER_DO_TMVA
-	LIBS     += $(TMVALIB)
-endif
-
 #python includes and libraries
 ifdef PYTHONCFG
 	INCLUDESDIRS  += $(shell $(PYTHONCFG) --includes)
@@ -58,44 +43,6 @@ ifdef PYTHONCFG
 	CXXFLAGS += -DDOTENSORFLOWPYBIND
 	LIBS     += -L$(shell $(PYTHONCFG) --prefix)/lib $(shell $(PYTHONCFG) --libs)
 endif
-
-#scram specific numpy c-api
-ifdef SCRAMNUMPYCFG
-	INCLUDESDIRS += -I$(SCRAMNUMPYCFG)/c-api/core/include
-endif
-
-# openCV includes and libraries
-ifdef OPENCV_DIRECTORY
-	INCLUDESDIRS  += -I$(OPENCV_DIRECTORY)/include/ -I$(OPENCV_DIRECTORY)/modules/core/include 
-	INCLUDESDIRS  += -I$(OPENCV_DIRECTORY)/modules/video/include -I$(OPENCV_DIRECTORY)/modules/objdetect/include 
-	INCLUDESDIRS  += -I$(OPENCV_DIRECTORY)/modules/ml/include/ -I$(OPENCV_DIRECTORY)/modules/photo/include/ 
-	INCLUDESDIRS  += -I$(OPENCV_DIRECTORY)/modules/imgproc/include/
-	INCLUDESDIRS  += -I$(OPENCV_DIRECTORY)
-
-	CXXFLAGS += -DSHOTTOPTAGGER_DO_OPENCV
-	LIBS     += -L$(OPENCV_DIRECTORY)/lib -lopencv_ml -lopencv_core
-endif
-
-# xgboost includes and libraries
-ifdef XGBOOST_DIRECTORY
-	INCLUDESDIRS  += -I$(XGBOOST_DIRECTORY) -I$(XGBOOST_DIRECTORY)/rabit/include
-
-	CXXFLAGS += -DDOXGBOOST
-	LIBS     += -L$(XGBOOST_DIRECTORY)/lib -lxgboost
-endif
-
-# tensorflow includes and libraries
-ifdef TENSORFLOW_DIR
-	INCLUDESDIRS  += -I$(TENSORFLOW_DIR)/include
-
-	CXXFLAGS += -DDOTENSORFLOW
-	LIBS     += -L$(TENSORFLOW_DIR)/lib -ltensorflow
-endif
-
-LHAPDFLIB  = -L$(LHAPDF_DATA_PATH)/../../lib -lLHAPDF
-
-#FILES = $(wildcard $(SDIR)/*.cc)
-#OBJS := $(FILES:$(SDIR)/%.cc=$(ODIR)/%.o)
 
 PROGRAMS = tupleReadTest
 
